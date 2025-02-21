@@ -1,0 +1,26 @@
+.item-detail{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    margin: 0 auto;
+    background-color: #918f8f;
+}
+.item-detail img{
+    width: 600px;
+}
+.detail-info{
+    border: 1px solid black;
+    padding: 51px;
+    width:450px;
+
+}
+.detail-info h3{
+    font-size: 3em;
+    margin-bottom: 109px;
+    margin-top: 0;
+}
+.btn-detail{
+    width: 100%;
+    padding: 15px;
+}
