@@ -1,6 +1,26 @@
-import React from 'react'
+import React, { useState } from 'react'
 import   './ItemDetail.css'
+import { Link } from 'react-router-dom'
+import { carritoContext } from '../../context/CarritoProvider'
+import { useContext } from 'react'
+import Contador from '../Contador/Contador'
+
 const ItemDetail = ({id,title,price,images,stock}) => {
+
+  const {agregarAlCarrito} = useContext(carritoContext);
+
+  const [agregarCantidad , setAgregarCantidad] = useState(0);
+
+
+  const handlerComprar = (cantidad)=>{
+
+    setAgregarCantidad(cantidad);
+
+    const item = {id,title,price}
+
+    agregarAlCarrito(item,cantidad)
+  }
+
   return (
     <div className='item-detail'>
       <img src={images} alt="" />
@@ -11,7 +31,9 @@ const ItemDetail = ({id,title,price,images,stock}) => {
           <p>Disponibles:{stock}</p>
       </div>
       <h3>${price}</h3>
-      <button className='btn-detail'>COMPRAR</button>
+
+      <Contador inicio={1} stock={stock} funcionAgregar={handlerComprar}/>
+      <Link to='/cart'>Ir al carrito</Link>
       </div>
     </div>
   )
