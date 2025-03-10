@@ -2,7 +2,7 @@ import React from 'react'
 import { useState,useContext } from 'react'
 import {carritoContext} from '../../context/CarritoProvider'
 import {db}from '../../service/config'
-import { collection,addDoc } from 'firebase/firestore'
+import { collection,addDoc, getDoc,doc,updateDoc} from 'firebase/firestore'
 
 const Checkout = () => {
 
@@ -33,9 +33,9 @@ const Checkout = () => {
         //Orden
 
         const orden = {
-            item:carrito.map(producto =>({
-                id: producto.id,
-                title: producto.title,
+            item:carrito.map(producto => ({
+                id: producto.item.id,
+                title: producto.item.title,
                 cantidad: producto.cantidad
             })),
             total: total,
@@ -45,15 +45,33 @@ const Checkout = () => {
             email: email,
             telefono: telefono
         }
-        console.log(orden);
+
         //Guardar en Firestore
-        addDoc(collection(db, "ordenes"), orden)
-        .then(docRef =>{
-            setOrdenId(docRef.id)
-            vaciarCarrito()
+        Promise.all(
+            orden.item.map(async (producto) =>{
+                const productosRef = doc(db,"productos",producto.id)
+                const productosDoc = await getDoc(productosRef)
+                const stockActual = productosDoc.data().stock 
+
+                await updateDoc(productosRef,{
+                    stock: stockActual - producto.cantidad
+                })
+            })
+        )
+        .then(()=>{
+            addDoc(collection(db,"ordenes"),orden)
+            .then(docRef =>{
+                setOrdenId(docRef.id)
+                vaciarCarrito();
+            })
+            .catch(error =>{
+                console.log("Error al generar la orden",error)
+                setError("Error al generar la orden")
+            })
         })
         .catch(error =>{
-            console.error("Error al guardar la orden", error)
+            console.log("Error al actualizar el stock",error)
+            setError("Error al actualizar el stock")
         })
     }
 
@@ -63,13 +81,13 @@ const Checkout = () => {
 
         <form onSubmit={formularioHandler}>
             {
-                carrito.map(producto =>{
-                    <div key={producto.id}>
-                        <p>{producto.title}</p>
+                carrito.map(producto =>(
+                    <div key={producto.item.id}>
+                        <p>{producto.item.title}</p>
                         <p>Cantidad: {producto.cantidad}</p>
-                        <p>${producto.price}</p>
+                        <p>${producto.item.price}</p>
                     </div>
-                })
+                ))
             }
             <div>
                 <label htmlFor="">Nombre</label>
